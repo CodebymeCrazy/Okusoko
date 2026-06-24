@@ -5,37 +5,39 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/lib/useAuth";
 import { createSession } from "@/lib/session";
+import { DEFAULT_PACK_ID, PACK_LIST, getPack, packTotal } from "@/lib/packs";
 import type { RevealMode } from "@/lib/types";
-
-const MODES: { value: RevealMode; label: string; blurb: string }[] = [
-  {
-    value: "volley",
-    label: "Volley",
-    blurb:
-      "The moment you answer a question, their answer to it unlocks. A little payoff on every question.",
-  },
-  {
-    value: "sealed",
-    label: "Sealed",
-    blurb:
-      "You both answer all 36 blind. Everything reveals at once when you've both finished. One big payoff.",
-  },
-];
 
 export default function CreatePage() {
   const router = useRouter();
   const { uid, loading, error } = useAuth();
   const [name, setName] = useState("");
+  const [pack, setPack] = useState<string>(DEFAULT_PACK_ID);
   const [reveal, setReveal] = useState<RevealMode>("volley");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const total = packTotal(getPack(pack));
+  const modes: { value: RevealMode; label: string; blurb: string }[] = [
+    {
+      value: "volley",
+      label: "Volley",
+      blurb:
+        "The moment you answer a question, their answer to it unlocks. A little payoff on every question.",
+    },
+    {
+      value: "sealed",
+      label: "Sealed",
+      blurb: `You both answer all ${total} blind. Everything reveals at once when you've both finished. One big payoff.`,
+    },
+  ];
 
   async function handleCreate() {
     if (!uid || !name.trim()) return;
     setSubmitting(true);
     setErr(null);
     try {
-      const id = await createSession(uid, name, reveal);
+      const id = await createSession(uid, name, reveal, pack);
       router.push(`/s/${id}`);
     } catch (e) {
       setErr(String((e as Error)?.message ?? e));
@@ -68,9 +70,35 @@ export default function CreatePage() {
       />
 
       <fieldset className="mt-8">
+        <legend className="text-sm font-medium">Which questions?</legend>
+        <div className="mt-3 space-y-3">
+          {PACK_LIST.map((p) => {
+            const selected = pack === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPack(p.id)}
+                aria-pressed={selected}
+                className={`card w-full p-4 text-left transition ${
+                  selected ? "border-ember ring-2 ring-ember/20" : "hover:border-ink/20"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{p.name}</span>
+                  <span className="text-xs text-dusk">{packTotal(p)} questions</span>
+                </div>
+                <p className="mt-1 text-sm text-dusk">{p.tagline}</p>
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <fieldset className="mt-8">
         <legend className="text-sm font-medium">How should answers reveal?</legend>
         <div className="mt-3 space-y-3">
-          {MODES.map((m) => {
+          {modes.map((m) => {
             const selected = reveal === m.value;
             return (
               <button

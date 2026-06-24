@@ -8,6 +8,8 @@ export type SessionStatus = "waiting" | "active" | "complete";
 export interface Settings {
   timing: Timing;
   reveal: RevealMode;
+  /** Question pack id. Absent on legacy sessions → treated as "aron". */
+  pack?: string;
 }
 
 export interface SeatState {

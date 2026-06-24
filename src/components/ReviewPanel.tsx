@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchResponse } from "@/lib/session";
-import { getQuestion } from "@/lib/questions";
+import { getQuestionIn, type QuestionPack } from "@/lib/packs";
 import type { ResponseDoc, Seat } from "@/lib/types";
 
 /**
@@ -15,6 +15,7 @@ export function ReviewPanel({
   partnerSeat,
   myName,
   partnerName,
+  pack,
   upTo,
   title,
   onClose,
@@ -27,6 +28,7 @@ export function ReviewPanel({
   partnerSeat: Seat;
   myName: string;
   partnerName: string;
+  pack: QuestionPack;
   /** Highest question number revealable to the caller. */
   upTo: number;
   title: string;
@@ -60,6 +62,7 @@ export function ReviewPanel({
                   partnerSeat={partnerSeat}
                   myName={myName}
                   partnerName={partnerName}
+                  pack={pack}
                   favoritable={favoritable}
                   isFavorite={favoriteQ === n}
                   onFavorite={onFavorite}
@@ -80,6 +83,7 @@ function ReviewRow({
   partnerSeat,
   myName,
   partnerName,
+  pack,
   favoritable,
   isFavorite,
   onFavorite,
@@ -90,13 +94,14 @@ function ReviewRow({
   partnerSeat: Seat;
   myName: string;
   partnerName: string;
+  pack: QuestionPack;
   favoritable: boolean;
   isFavorite: boolean;
   onFavorite?: (qn: number) => void;
 }) {
   const [mine, setMine] = useState<ResponseDoc | null>(null);
   const [theirs, setTheirs] = useState<ResponseDoc | null>(null);
-  const question = getQuestion(n);
+  const question = getQuestionIn(pack, n);
 
   useEffect(() => {
     let active = true;

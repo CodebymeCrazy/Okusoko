@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getQuestion, setIntroBefore, TOTAL_QUESTIONS } from "@/lib/questions";
+import { getQuestionIn, packTotal, setIntroBeforeIn, type QuestionPack } from "@/lib/packs";
 import { submitAnswer } from "@/lib/session";
 import { getViewedUpTo, setViewedUpTo } from "@/lib/ledger";
 import { nudgeText } from "@/lib/share";
@@ -20,6 +20,7 @@ export function QuestionLoop({
   mine,
   partner,
   reveal,
+  pack,
 }: {
   sessionId: string;
   uid: string;
@@ -29,11 +30,13 @@ export function QuestionLoop({
   mine: SeatState;
   partner: SeatState;
   reveal: RevealMode;
+  pack: QuestionPack;
 }) {
+  const total = packTotal(pack);
   const partnerSeat: Seat = mySeat === "a" ? "b" : "a";
   const currentN = mine.lastAnswered + 1;
-  const question = getQuestion(currentN);
-  const intro = setIntroBefore(currentN);
+  const question = getQuestionIn(pack, currentN);
+  const intro = setIntroBeforeIn(pack, currentN);
 
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +64,7 @@ export function QuestionLoop({
     setSubmitting(true);
     setError(null);
     try {
-      await submitAnswer(sessionId, mySeat, currentN, uid, text);
+      await submitAnswer(sessionId, mySeat, currentN, uid, text, total);
       setJustAnswered({ n: currentN, text: text.trim() });
       setText("");
     } catch (e) {
@@ -82,7 +85,8 @@ export function QuestionLoop({
   return (
     <main className="flex flex-1 flex-col">
       <TopBar
-        current={Math.min(currentN, TOTAL_QUESTIONS)}
+        current={Math.min(currentN, total)}
+        total={total}
         unread={unread}
         partnerName={partnerName}
         onReview={openReview}
@@ -98,7 +102,9 @@ export function QuestionLoop({
           partnerSeat={partnerSeat}
           partnerAnswered={partner.lastAnswered >= justAnswered.n}
           reveal={reveal}
-          isLast={justAnswered.n >= TOTAL_QUESTIONS}
+          pack={pack}
+          total={total}
+          isLast={justAnswered.n >= total}
           onNext={() => setJustAnswered(null)}
         />
       ) : showIntro && intro ? (
@@ -150,6 +156,7 @@ export function QuestionLoop({
           partnerSeat={partnerSeat}
           myName={myName}
           partnerName={partnerName}
+          pack={pack}
           upTo={revealable}
           title={`You & ${partnerName} so far`}
           onClose={() => setShowReview(false)}
@@ -161,11 +168,13 @@ export function QuestionLoop({
 
 function TopBar({
   current,
+  total,
   unread,
   partnerName,
   onReview,
 }: {
   current: number;
+  total: number;
   unread: number;
   partnerName: string;
   onReview: () => void;
@@ -174,7 +183,7 @@ function TopBar({
     <div className="sticky top-0 -mx-5 bg-paper/90 px-5 pb-3 pt-1 backdrop-blur">
       <div className="mb-2 flex items-center justify-between text-sm text-dusk">
         <span>
-          Question {current} of {TOTAL_QUESTIONS}
+          Question {current} of {total}
         </span>
         {unread > 0 && (
           <button onClick={onReview} className="pill hover:bg-blush">
@@ -182,7 +191,7 @@ function TopBar({
           </button>
         )}
       </div>
-      <Progress value={current - 1} total={TOTAL_QUESTIONS} />
+      <Progress value={current - 1} total={total} />
     </div>
   );
 }
@@ -196,6 +205,8 @@ function SubmittedView({
   partnerSeat,
   partnerAnswered,
   reveal,
+  pack,
+  total,
   isLast,
   onNext,
 }: {
@@ -207,10 +218,12 @@ function SubmittedView({
   partnerSeat: Seat;
   partnerAnswered: boolean;
   reveal: RevealMode;
+  pack: QuestionPack;
+  total: number;
   isLast: boolean;
   onNext: () => void;
 }) {
-  const question = getQuestion(n);
+  const question = getQuestionIn(pack, n);
   return (
     <section className="flex flex-1 animate-fade-up flex-col pt-6">
       <p className="text-sm font-medium uppercase tracking-wide text-ember">Question {n}</p>
@@ -234,7 +247,7 @@ function SubmittedView({
             </div>
             <div className="card p-4 text-sm text-dusk">
               {reveal === "sealed"
-                ? `Answered. Everything reveals once you've both finished all ${TOTAL_QUESTIONS}.`
+                ? `Answered. Everything reveals once you've both finished all ${total}.`
                 : `Answered. Waiting for ${partnerName} on this one — it'll fill in when they reach it.`}
             </div>
           </>

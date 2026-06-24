@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { nudgeText } from "@/lib/share";
-import { TOTAL_QUESTIONS } from "@/lib/questions";
+import { packTotal, type QuestionPack } from "@/lib/packs";
 import type { RevealMode, Seat, SeatState } from "@/lib/types";
 import { WhatsAppButton } from "./ui";
 import { ReviewPanel } from "./ReviewPanel";
@@ -58,7 +58,7 @@ export function ErrorScreen({ message }: { message: string }) {
   );
 }
 
-/** You've answered all 36; your partner hasn't finished yet. */
+/** You've answered everything; your partner hasn't finished yet. */
 export function WaitingToFinish({
   sessionId,
   uid,
@@ -68,6 +68,7 @@ export function WaitingToFinish({
   mine,
   partner,
   reveal,
+  pack,
 }: {
   sessionId: string;
   uid: string;
@@ -77,7 +78,9 @@ export function WaitingToFinish({
   mine: SeatState;
   partner: SeatState;
   reveal: RevealMode;
+  pack: QuestionPack;
 }) {
+  const total = packTotal(pack);
   const partnerSeat: Seat = mySeat === "a" ? "b" : "a";
   const [showReview, setShowReview] = useState(false);
   const revealable = Math.min(mine.lastAnswered, partner.lastAnswered);
@@ -86,11 +89,10 @@ export function WaitingToFinish({
     <main className="flex flex-1 flex-col">
       <p className="pill self-start">You're done</p>
       <h1 className="mt-5 font-serif text-3xl leading-snug">
-        All {TOTAL_QUESTIONS} answered. Now it's on {partnerName}.
+        All {total} answered. Now it's on {partnerName}.
       </h1>
       <p className="mt-3 text-dusk">
-        {partnerName} is on question {Math.min(partner.lastAnswered + 1, TOTAL_QUESTIONS)} of{" "}
-        {TOTAL_QUESTIONS}.{" "}
+        {partnerName} is on question {Math.min(partner.lastAnswered + 1, total)} of {total}.{" "}
         {reveal === "sealed"
           ? "Everything reveals at once the moment they finish."
           : "Their last answers will reveal as soon as they catch up."}
@@ -114,6 +116,7 @@ export function WaitingToFinish({
           partnerSeat={partnerSeat}
           myName={myName}
           partnerName={partnerName}
+          pack={pack}
           upTo={revealable}
           title={`You & ${partnerName} so far`}
           onClose={() => setShowReview(false)}

@@ -6,7 +6,7 @@ import { firebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
 import { fetchSession } from "@/lib/session";
 import { forgetMySession, getMySessions, type MySessionRef } from "@/lib/mySessions";
-import { TOTAL_QUESTIONS } from "@/lib/questions";
+import { getPack, packTotal } from "@/lib/packs";
 import type { Seat, Session } from "@/lib/types";
 
 interface Row extends MySessionRef {
@@ -98,9 +98,10 @@ function describe(session: Session | null, seat: Seat) {
   const mine = seat === "a" ? session.seatA : session.seatB;
   const partner = seat === "a" ? session.seatB : session.seatA;
   const partnerName = partner.name ?? "your partner";
-  const progress = `You ${mine.lastAnswered}/${TOTAL_QUESTIONS} · ${
+  const total = packTotal(getPack(session.settings.pack));
+  const progress = `You ${mine.lastAnswered}/${total} · ${
     partner.name ?? "—"
-  } ${partner.lastAnswered}/${TOTAL_QUESTIONS}`;
+  } ${partner.lastAnswered}/${total}`;
 
   if (partner.uid === null) {
     return {
@@ -113,7 +114,7 @@ function describe(session: Session | null, seat: Seat) {
   if (mine.finished && partner.finished) {
     return {
       title: `You & ${partnerName}`,
-      detail: "All 36 answered — open your keepsake.",
+      detail: `All ${total} answered — open your keepsake.`,
       chip: "Done",
       chipClass: "bg-emerald-100 text-emerald-700",
     };

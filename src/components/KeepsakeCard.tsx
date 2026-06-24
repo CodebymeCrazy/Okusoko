@@ -10,11 +10,16 @@ export function KeepsakeCard({
   nameA,
   nameB,
   dateLabel,
+  total,
+  attribution,
   favorite,
 }: {
   nameA: string;
   nameB: string;
   dateLabel: string;
+  total: number;
+  /** Small footer line — pack name / source. */
+  attribution: string;
   /** An answer to feature on the card (the partner answer the viewer starred). */
   favorite?: { author: string; question: number; text: string };
 }) {
@@ -52,7 +57,7 @@ export function KeepsakeCard({
         <p className="mt-8 font-serif text-3xl leading-snug text-ink">
           {nameA} &amp; {nameB}
         </p>
-        <p className="mt-3 font-serif text-lg text-dusk">answered all 36 questions.</p>
+        <p className="mt-3 font-serif text-lg text-dusk">answered all {total} questions.</p>
 
         {quote && (
           <figure className="mx-auto mt-7 max-w-md rounded-2xl bg-white/60 px-5 py-4">
@@ -67,9 +72,7 @@ export function KeepsakeCard({
 
         <div className="mx-auto mt-6 h-px w-16 bg-ember/40" />
         <p className="mt-6 text-sm text-dusk">{dateLabel}</p>
-        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-dusk/70">
-          The 36 questions · Aron, 1997
-        </p>
+        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-dusk/70">{attribution}</p>
       </div>
       <button className="btn-secondary mt-4" onClick={download} disabled={busy}>
         {busy ? "Saving…" : "Save keepsake image"}

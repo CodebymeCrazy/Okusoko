@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { spreadText } from "@/lib/share";
 import { fetchResponse, setFavorite } from "@/lib/session";
-import { TOTAL_QUESTIONS } from "@/lib/questions";
+import { packTotal, type QuestionPack } from "@/lib/packs";
 import type { ResponseDoc, Seat, Session } from "@/lib/types";
 import { KeepsakeCard } from "./KeepsakeCard";
 import { ReviewPanel } from "./ReviewPanel";
@@ -12,18 +12,21 @@ import { WhatsAppButton } from "./ui";
 /**
  * Shown to both people once both have finished. The keepsake is the real
  * ending; the eye-contact note is a gentle, do-it-yourselves suggestion; the
- * side-by-side review reads all 36 (partner reads are unlocked for both modes
- * once both are finished). Reveal mode only changes the framing.
+ * side-by-side review reads everything (partner reads are unlocked for both
+ * modes once both are finished). Reveal mode only changes the framing.
  */
 export function Finale({
   sessionId,
   session,
   mySeat,
+  pack,
 }: {
   sessionId: string;
   session: Session;
   mySeat: Seat;
+  pack: QuestionPack;
 }) {
+  const total = packTotal(pack);
   const partnerSeat: Seat = mySeat === "a" ? "b" : "a";
   const myName = (mySeat === "a" ? session.seatA.name : session.seatB.name) ?? "You";
   const partnerName =
@@ -61,8 +64,8 @@ export function Finale({
       <p className="pill self-start">You both made it</p>
       <h1 className="mt-5 font-serif text-3xl leading-snug">
         {sealed
-          ? `All 36, answered blind. Here's everything, ${myName}.`
-          : `You and ${partnerName} answered all ${TOTAL_QUESTIONS}.`}
+          ? `All ${total}, answered blind. Here's everything, ${myName}.`
+          : `You and ${partnerName} answered all ${total}.`}
       </h1>
 
       <div className="mt-8">
@@ -70,6 +73,8 @@ export function Finale({
           nameA={session.seatA.name ?? "—"}
           nameB={session.seatB.name ?? "—"}
           dateLabel={dateLabel}
+          total={total}
+          attribution={pack.id === "aron" ? "The 36 questions · Aron, 1997" : `${pack.name} · Okusoko`}
           favorite={
             favoriteQ && favoriteText
               ? { author: partnerName, question: favoriteQ, text: favoriteText }
@@ -91,17 +96,19 @@ export function Finale({
       </section>
 
       <button className="btn-primary mt-8 self-start" onClick={() => setShowAll(true)}>
-        {sealed ? "Read everything, side by side" : "Reread all 36 together"}
+        {sealed ? "Read everything, side by side" : `Reread all ${total} together`}
       </button>
 
-      <section className="card mt-8 p-5">
-        <h2 className="font-serif text-xl">One more thing, when you're together</h2>
-        <p className="mt-2 text-dusk">
-          Aron's study ended with four minutes of unbroken eye contact. Next time you're in
-          the same room — or on a video call — try it. We don't host it; it's just the
-          ending the research suggests.
-        </p>
-      </section>
+      {pack.id === "aron" && (
+        <section className="card mt-8 p-5">
+          <h2 className="font-serif text-xl">One more thing, when you're together</h2>
+          <p className="mt-2 text-dusk">
+            Aron's study ended with four minutes of unbroken eye contact. Next time you're
+            in the same room — or on a video call — try it. We don't host it; it's just the
+            ending the research suggests.
+          </p>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="font-serif text-xl">Pass it on</h2>
@@ -120,8 +127,9 @@ export function Finale({
           partnerSeat={partnerSeat}
           myName={myName}
           partnerName={partnerName}
-          upTo={TOTAL_QUESTIONS}
-          title="All 36, together"
+          pack={pack}
+          upTo={total}
+          title={`All ${total}, together`}
           onClose={() => setShowAll(false)}
         />
       )}
@@ -133,7 +141,8 @@ export function Finale({
           partnerSeat={partnerSeat}
           myName={myName}
           partnerName={partnerName}
-          upTo={TOTAL_QUESTIONS}
+          pack={pack}
+          upTo={total}
           title={`Star one of ${partnerName}'s answers`}
           onClose={() => setFavoritePicker(false)}
           favoritable

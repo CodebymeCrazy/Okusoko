@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 const title = "Okusoko — the 36 questions, all the way down";
@@ -22,6 +23,11 @@ export const metadata: Metadata = {
     description,
     images: ["/api/og"],
   },
+  appleWebApp: { capable: true, title: "Okusoko", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#c2453d",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
         <Analytics />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

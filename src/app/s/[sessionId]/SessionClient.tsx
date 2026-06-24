@@ -5,6 +5,7 @@ import { firebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
 import { useSession } from "@/lib/session";
 import { recordMySession } from "@/lib/mySessions";
+import { getPack } from "@/lib/packs";
 import type { Seat } from "@/lib/types";
 import { Spinner } from "@/components/ui";
 import { InviteScreen } from "@/components/InviteScreen";
@@ -63,9 +64,10 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
   const myName = mine.name ?? "You";
   const partnerName = partner.name ?? "Your partner";
   const reveal = session.settings.reveal;
+  const pack = getPack(session.settings.pack);
 
   if (mine.finished && partner.finished) {
-    return <Finale sessionId={sessionId} session={session} mySeat={mySeat} />;
+    return <Finale sessionId={sessionId} session={session} mySeat={mySeat} pack={pack} />;
   }
 
   if (mine.finished) {
@@ -79,6 +81,7 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
         mine={mine}
         partner={partner}
         reveal={reveal}
+        pack={pack}
       />
     );
   }
@@ -93,6 +96,7 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
       mine={mine}
       partner={partner}
       reveal={reveal}
+      pack={pack}
     />
   );
 }

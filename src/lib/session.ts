@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { getDb } from "./firebase";
-import { TOTAL_QUESTIONS } from "./questions";
+import { DEFAULT_PACK_ID } from "./packs";
 import type { ResponseDoc, RevealMode, Seat, Session } from "./types";
 
 const SESSIONS = "sessions";
@@ -38,13 +38,14 @@ function makeSessionId(): string {
 export async function createSession(
   uid: string,
   name: string,
-  reveal: RevealMode
+  reveal: RevealMode,
+  pack: string = DEFAULT_PACK_ID
 ): Promise<string> {
   const sessionId = makeSessionId();
   const session: Session = {
     createdAt: serverTimestamp() as unknown as Session["createdAt"],
     status: "waiting",
-    settings: { timing: "apart", reveal },
+    settings: { timing: "apart", reveal, pack },
     seatA: {
       uid,
       name: name.trim(),
@@ -87,7 +88,8 @@ export async function submitAnswer(
   seat: Seat,
   qn: number,
   uid: string,
-  text: string
+  text: string,
+  total: number
 ): Promise<void> {
   // Write the (immutable) answer doc first.
   const response: ResponseDoc = {
@@ -98,7 +100,7 @@ export async function submitAnswer(
   await setDoc(responseRef(sessionId, qn, seat), response);
 
   // Then move our progress pointer forward (and flag finished / complete).
-  const finished = qn >= TOTAL_QUESTIONS;
+  const finished = qn >= total;
   const seatKey = seat === "a" ? "seatA" : "seatB";
   const updates: Record<string, unknown> = {
     [`${seatKey}.lastAnswered`]: qn,
