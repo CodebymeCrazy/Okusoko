@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { YourSessions } from "@/components/YourSessions";
+import { InstallHint } from "@/components/InstallHint";
 
 const STEPS = [
   {
@@ -24,6 +25,7 @@ export default function Landing() {
       </header>
 
       <YourSessions />
+      <InstallHint />
 
       <section className="mt-6 animate-fade-up">
         <h1 className="font-serif text-4xl leading-tight sm:text-5xl">
