@@ -31,31 +31,33 @@ export function ReviewPanel({
 }) {
   const numbers = Array.from({ length: Math.max(0, upTo) }, (_, i) => i + 1);
   return (
-    <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm">
-      <div className="card my-8 h-fit w-full max-w-2xl p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl">{title}</h2>
-          <button onClick={onClose} className="btn-secondary px-4 py-2 text-sm">
-            Close
-          </button>
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-ink/40 backdrop-blur-sm">
+      <div className="mx-auto my-8 w-full max-w-2xl px-4">
+        <div className="card p-5">
+          <div className="sticky top-0 z-10 -mx-5 -mt-5 mb-4 flex items-center justify-between rounded-t-2xl border-b border-ink/10 bg-white/95 px-5 py-3 backdrop-blur">
+            <h2 className="font-serif text-2xl">{title}</h2>
+            <button onClick={onClose} className="btn-secondary px-4 py-2 text-sm">
+              Close
+            </button>
+          </div>
+          {numbers.length === 0 ? (
+            <p className="text-dusk">Nothing to review yet.</p>
+          ) : (
+            <ol className="space-y-6">
+              {numbers.map((n) => (
+                <ReviewRow
+                  key={n}
+                  sessionId={sessionId}
+                  n={n}
+                  mySeat={mySeat}
+                  partnerSeat={partnerSeat}
+                  myName={myName}
+                  partnerName={partnerName}
+                />
+              ))}
+            </ol>
+          )}
         </div>
-        {numbers.length === 0 ? (
-          <p className="text-dusk">Nothing to review yet.</p>
-        ) : (
-          <ol className="space-y-6">
-            {numbers.map((n) => (
-              <ReviewRow
-                key={n}
-                sessionId={sessionId}
-                n={n}
-                mySeat={mySeat}
-                partnerSeat={partnerSeat}
-                myName={myName}
-                partnerName={partnerName}
-              />
-            ))}
-          </ol>
-        )}
       </div>
     </div>
   );
