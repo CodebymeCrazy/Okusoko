@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const title = "Okusoko — the 36 questions, all the way down";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
           {children}
         </div>
+        <Analytics />
       </body>
     </html>
   );
