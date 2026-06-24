@@ -57,6 +57,24 @@ npm run dev
 The Firebase web keys are public client keys by design — all security is
 enforced by the rules.
 
+## Deploy to Vercel
+
+1. **Firebase (console — one time):**
+   - **Authentication → Sign-in method → enable Anonymous.**
+   - **Firestore Database → Create database** (production mode; pick a region).
+   - **Firestore → Rules:** paste the contents of [`firestore.rules`](./firestore.rules)
+     and **Publish** (or `firebase deploy --only firestore:rules`).
+   - **Authentication → Settings → Authorized domains:** add your Vercel domain
+     (e.g. `okusoko.vercel.app`).
+2. **Vercel:** import the GitHub repo. Framework auto-detects as Next.js — no
+   build config needed.
+3. **Vercel → Settings → Environment Variables:** add every `NEXT_PUBLIC_FIREBASE_*`
+   value (from `.env.local`). These are public client keys, so they live in the
+   Vercel dashboard, not in git.
+4. **Deploy.** After the first deploy, set `NEXT_PUBLIC_BASE_URL` to your live URL
+   (e.g. `https://okusoko.vercel.app`) and redeploy — this makes share links and
+   the Open Graph preview use the real domain instead of `localhost`.
+
 ## Project map
 
 | Path | What it is |
