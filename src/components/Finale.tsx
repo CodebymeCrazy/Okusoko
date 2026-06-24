@@ -20,11 +20,13 @@ export function Finale({
   session,
   mySeat,
   pack,
+  uid,
 }: {
   sessionId: string;
   session: Session;
   mySeat: Seat;
   pack: QuestionPack;
+  uid: string;
 }) {
   const total = packTotal(pack);
   const partnerSeat: Seat = mySeat === "a" ? "b" : "a";
@@ -123,6 +125,7 @@ export function Finale({
       {showAll && (
         <ReviewPanel
           sessionId={sessionId}
+          uid={uid}
           mySeat={mySeat}
           partnerSeat={partnerSeat}
           myName={myName}
@@ -137,6 +140,7 @@ export function Finale({
       {favoritePicker && (
         <ReviewPanel
           sessionId={sessionId}
+          uid={uid}
           mySeat={mySeat}
           partnerSeat={partnerSeat}
           myName={myName}

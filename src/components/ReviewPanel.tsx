@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { fetchResponse } from "@/lib/session";
 import { getQuestionIn, type QuestionPack } from "@/lib/packs";
 import type { ResponseDoc, Seat } from "@/lib/types";
+import { Avatar } from "./Avatar";
+import { Reactions } from "./Reactions";
 
 /**
  * Overlay listing every question both people have answered, my answer beside
@@ -11,6 +13,7 @@ import type { ResponseDoc, Seat } from "@/lib/types";
  */
 export function ReviewPanel({
   sessionId,
+  uid,
   mySeat,
   partnerSeat,
   myName,
@@ -24,6 +27,7 @@ export function ReviewPanel({
   onFavorite,
 }: {
   sessionId: string;
+  uid: string;
   mySeat: Seat;
   partnerSeat: Seat;
   myName: string;
@@ -57,6 +61,7 @@ export function ReviewPanel({
                 <ReviewRow
                   key={n}
                   sessionId={sessionId}
+                  uid={uid}
                   n={n}
                   mySeat={mySeat}
                   partnerSeat={partnerSeat}
@@ -78,6 +83,7 @@ export function ReviewPanel({
 
 function ReviewRow({
   sessionId,
+  uid,
   n,
   mySeat,
   partnerSeat,
@@ -89,6 +95,7 @@ function ReviewRow({
   onFavorite,
 }: {
   sessionId: string;
+  uid: string;
   n: number;
   mySeat: Seat;
   partnerSeat: Seat;
@@ -123,9 +130,10 @@ function ReviewRow({
       <p className="text-xs font-medium uppercase tracking-wide text-ember">Question {n}</p>
       <p className="mt-1 font-serif text-lg leading-snug">{question?.text}</p>
       <div className="mt-3 space-y-2">
-        <Bubble who={myName} text={mine?.text} mine />
+        <Bubble who={myName} seat={mySeat} text={mine?.text} mine />
         <Bubble
           who={partnerName}
+          seat={partnerSeat}
           text={theirs?.text}
           star={
             favoritable && theirs?.text
@@ -134,17 +142,29 @@ function ReviewRow({
           }
         />
       </div>
+      {theirs?.text && (
+        <Reactions
+          sessionId={sessionId}
+          qn={n}
+          mySeat={mySeat}
+          partnerSeat={partnerSeat}
+          uid={uid}
+          partnerName={partnerName}
+        />
+      )}
     </li>
   );
 }
 
 function Bubble({
   who,
+  seat,
   text,
   mine = false,
   star,
 }: {
   who: string;
+  seat: Seat;
   text?: string;
   mine?: boolean;
   star?: { active: boolean; onClick: () => void };
@@ -156,7 +176,10 @@ function Bubble({
       }`}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wide text-dusk">{who}</p>
+        <span className="flex items-center gap-2">
+          <Avatar name={who} seat={seat} size="sm" />
+          <p className="text-xs font-medium uppercase tracking-wide text-dusk">{who}</p>
+        </span>
         {star && (
           <button
             onClick={star.onClick}

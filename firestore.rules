@@ -23,6 +23,20 @@ service cloud.firestore {
 
     match /sessions/{sessionId} {
 
+      function session() {
+        return sessionDoc(sessionId);
+      }
+
+      // Which seat does the caller hold? 'a', 'b', or 'none'.
+      function mySeat() {
+        return session().seatA.uid == request.auth.uid ? 'a'
+          : (session().seatB.uid == request.auth.uid ? 'b' : 'none');
+      }
+
+      function bothFinished() {
+        return session().seatA.finished == true && session().seatB.finished == true;
+      }
+
       // Read the session doc (names + progress metadata only — never answer text)
       // if you're a seat holder, OR if seat B is still open so a prospective
       // partner can see who invited them. Once both seats are full, a third
@@ -71,20 +85,6 @@ service cloud.firestore {
 
       match /questions/{qid}/responses/{seat} {
 
-        function session() {
-          return sessionDoc(sessionId);
-        }
-
-        // Which seat does the caller hold? 'a', 'b', or 'none'.
-        function mySeat() {
-          return session().seatA.uid == request.auth.uid ? 'a'
-            : (session().seatB.uid == request.auth.uid ? 'b' : 'none');
-        }
-
-        function bothFinished() {
-          return session().seatA.finished == true && session().seatB.finished == true;
-        }
-
         function myAnswerExists() {
           return exists(
             /databases/$(database)/documents/sessions/$(sessionId)/questions/$(qid)/responses/$(mySeat())
@@ -112,6 +112,17 @@ service cloud.firestore {
               : bothFinished()
           )
         );
+      }
+
+      // Reactions: a heart and/or a short note left on your partner's answer.
+      // The doc id is the REACTOR's seat. Unlike answers, reactions are not the
+      // gated content — both members may read them; you may only write your own.
+      match /questions/{qid}/reactions/{seat} {
+        allow read: if isSignedIn() && mySeat() != 'none';
+        allow create, update: if isSignedIn()
+          && seat == mySeat()
+          && request.resource.data.uid == request.auth.uid;
+        allow delete: if false;
       }
     }
   }

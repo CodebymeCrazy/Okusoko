@@ -112,6 +112,7 @@ export function WaitingToFinish({
       {showReview && (
         <ReviewPanel
           sessionId={sessionId}
+          uid={uid}
           mySeat={mySeat}
           partnerSeat={partnerSeat}
           myName={myName}

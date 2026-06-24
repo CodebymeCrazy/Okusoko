@@ -5,8 +5,11 @@ import { getQuestionIn, packTotal, setIntroBeforeIn, type QuestionPack } from "@
 import { submitAnswer } from "@/lib/session";
 import { getViewedUpTo, setViewedUpTo } from "@/lib/ledger";
 import { nudgeText } from "@/lib/share";
+import { setTheme } from "@/lib/setTheme";
+import { isActive } from "@/lib/people";
 import type { RevealMode, Seat, SeatState } from "@/lib/types";
 import { Progress, WhatsAppButton } from "./ui";
+import { Pair } from "./Avatar";
 import { SetIntroCard } from "./SetIntroCard";
 import { RevealBlock } from "./RevealBlock";
 import { ReviewPanel } from "./ReviewPanel";
@@ -82,23 +85,39 @@ export function QuestionLoop({
 
   const iAmAhead = mine.lastAnswered > partner.lastAnswered;
 
+  // The screen deepens with each set. Track the set of whatever's on screen.
+  const displaySet =
+    (justAnswered ? getQuestionIn(pack, justAnswered.n)?.set : question?.set) ?? intro?.set ?? 1;
+  const theme = setTheme(displaySet);
+
+  const seatA = mySeat === "a" ? mine : partner;
+  const seatB = mySeat === "a" ? partner : mine;
+  const activeSeat = isActive(partner.lastSeen) ? partnerSeat : isActive(mine.lastSeen) ? mySeat : null;
+
   return (
     <main className="flex flex-1 flex-col">
+      <div aria-hidden className={`fixed inset-0 -z-10 ${theme.backdrop}`} />
       <TopBar
         current={Math.min(currentN, total)}
         total={total}
         unread={unread}
         partnerName={partnerName}
+        partnerActive={isActive(partner.lastSeen)}
+        aName={seatA.name}
+        bName={seatB.name}
+        activeSeat={activeSeat}
         onReview={openReview}
       />
 
       {justAnswered ? (
         <SubmittedView
           sessionId={sessionId}
+          uid={uid}
           n={justAnswered.n}
           myText={justAnswered.text}
           myName={myName}
           partnerName={partnerName}
+          mySeat={mySeat}
           partnerSeat={partnerSeat}
           partnerAnswered={partner.lastAnswered >= justAnswered.n}
           reveal={reveal}
@@ -114,7 +133,7 @@ export function QuestionLoop({
         />
       ) : question ? (
         <section className="flex flex-1 animate-fade-up flex-col">
-          <p className="mt-6 text-sm font-medium uppercase tracking-wide text-ember">
+          <p className={`mt-6 text-sm font-medium uppercase tracking-wide ${theme.accent}`}>
             Set {roman(question.set)}
           </p>
           <h1 className="mt-2 font-serif text-3xl leading-snug">{question.text}</h1>
@@ -152,6 +171,7 @@ export function QuestionLoop({
       {showReview && (
         <ReviewPanel
           sessionId={sessionId}
+          uid={uid}
           mySeat={mySeat}
           partnerSeat={partnerSeat}
           myName={myName}
@@ -171,20 +191,37 @@ function TopBar({
   total,
   unread,
   partnerName,
+  partnerActive,
+  aName,
+  bName,
+  activeSeat,
   onReview,
 }: {
   current: number;
   total: number;
   unread: number;
   partnerName: string;
+  partnerActive: boolean;
+  aName: string | null;
+  bName: string | null;
+  activeSeat: Seat | null;
   onReview: () => void;
 }) {
   return (
-    <div className="sticky top-0 -mx-5 bg-paper/90 px-5 pb-3 pt-1 backdrop-blur">
+    <div className="sticky top-0 -mx-5 bg-white/30 px-5 pb-3 pt-1 backdrop-blur">
       <div className="mb-2 flex items-center justify-between text-sm text-dusk">
-        <span>
-          Question {current} of {total}
-        </span>
+        <div className="flex items-center gap-2">
+          <Pair aName={aName} bName={bName} activeSeat={activeSeat} />
+          <span>
+            {partnerActive ? (
+              <span className="text-emerald-600">{partnerName} is here</span>
+            ) : (
+              <>
+                Question {current} of {total}
+              </>
+            )}
+          </span>
+        </div>
         {unread > 0 && (
           <button onClick={onReview} className="pill hover:bg-blush">
             {unread} new from {partnerName}
@@ -198,10 +235,12 @@ function TopBar({
 
 function SubmittedView({
   sessionId,
+  uid,
   n,
   myText,
   myName,
   partnerName,
+  mySeat,
   partnerSeat,
   partnerAnswered,
   reveal,
@@ -211,10 +250,12 @@ function SubmittedView({
   onNext,
 }: {
   sessionId: string;
+  uid: string;
   n: number;
   myText: string;
   myName: string;
   partnerName: string;
+  mySeat: Seat;
   partnerSeat: Seat;
   partnerAnswered: boolean;
   reveal: RevealMode;
@@ -234,10 +275,12 @@ function SubmittedView({
           <RevealBlock
             sessionId={sessionId}
             qn={n}
+            mySeat={mySeat}
             partnerSeat={partnerSeat}
             partnerName={partnerName}
             myName={myName}
             myText={myText}
+            uid={uid}
           />
         ) : (
           <>

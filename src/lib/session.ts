@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { getDb } from "./firebase";
 import { DEFAULT_PACK_ID } from "./packs";
-import type { ResponseDoc, RevealMode, Seat, Session } from "./types";
+import type { ReactionDoc, ResponseDoc, RevealMode, Seat, Session } from "./types";
 
 const SESSIONS = "sessions";
 
@@ -23,6 +23,10 @@ function sessionRef(sessionId: string): DocumentReference {
 
 function responseRef(sessionId: string, qn: number, seat: Seat): DocumentReference {
   return doc(getDb(), SESSIONS, sessionId, "questions", String(qn), "responses", seat);
+}
+
+function reactionRef(sessionId: string, qn: number, seat: Seat): DocumentReference {
+  return doc(getDb(), SESSIONS, sessionId, "questions", String(qn), "reactions", seat);
 }
 
 /** Short, URL-friendly, unguessable-enough session id. */
@@ -128,6 +132,60 @@ export async function setFavorite(
 ): Promise<void> {
   const seatKey = seat === "a" ? "seatA" : "seatB";
   await updateDoc(sessionRef(sessionId), { [`${seatKey}.favoriteQ`]: qn });
+}
+
+/** Heartbeat write so the partner can see "you're here right now". */
+export async function touchPresence(sessionId: string, seat: Seat): Promise<void> {
+  const seatKey = seat === "a" ? "seatA" : "seatB";
+  await updateDoc(sessionRef(sessionId), { [`${seatKey}.lastSeen`]: serverTimestamp() });
+}
+
+/** React to your partner's answer (a heart and/or a short note back). */
+export async function setReaction(
+  sessionId: string,
+  qn: number,
+  seat: Seat,
+  uid: string,
+  data: { heart: boolean; note: string }
+): Promise<void> {
+  const reaction: ReactionDoc = {
+    heart: data.heart,
+    note: data.note.trim(),
+    uid,
+    at: serverTimestamp() as unknown as ReactionDoc["at"],
+  };
+  await setDoc(reactionRef(sessionId, qn, seat), reaction);
+}
+
+export async function fetchReaction(
+  sessionId: string,
+  qn: number,
+  seat: Seat
+): Promise<ReactionDoc | null> {
+  const snap = await getDoc(reactionRef(sessionId, qn, seat));
+  return snap.exists() ? (snap.data() as ReactionDoc) : null;
+}
+
+/** Keep this seat's presence fresh while the page is open and visible. */
+export function usePresence(sessionId: string, seat: Seat | null): void {
+  useEffect(() => {
+    if (!seat) return;
+    const ping = () => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
+        touchPresence(sessionId, seat).catch(() => {});
+      }
+    };
+    ping();
+    const iv = setInterval(ping, 30000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") ping();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [sessionId, seat]);
 }
 
 /** One-shot read of a session doc (used by the "Your sessions" list). */

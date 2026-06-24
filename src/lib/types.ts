@@ -21,6 +21,15 @@ export interface SeatState {
   finished: boolean;
   /** The question number whose partner answer this seat starred for the keepsake. */
   favoriteQ?: number | null;
+  /** Heartbeat — when this seat was last active, for presence ("Sam is here"). */
+  lastSeen?: Timestamp | null;
+}
+
+export interface ReactionDoc {
+  heart: boolean;
+  note: string;
+  uid: string;
+  at: Timestamp | null;
 }
 
 export interface Session {

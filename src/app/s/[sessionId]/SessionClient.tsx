@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { firebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
-import { useSession } from "@/lib/session";
+import { useSession, usePresence } from "@/lib/session";
 import { recordMySession } from "@/lib/mySessions";
 import { getPack } from "@/lib/packs";
 import type { Seat } from "@/lib/types";
@@ -26,13 +26,23 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
     firebaseConfigured ? sessionId : null
   );
 
+  // The caller's seat, resolved from uid (null until known / if not a member).
+  const seatEarly: Seat | null =
+    uid && session
+      ? uid === session.seatA.uid
+        ? "a"
+        : uid === session.seatB.uid
+        ? "b"
+        : null
+      : null;
+
   // Remember any session this device holds a seat in, for the "Your sessions" list.
   useEffect(() => {
-    if (!uid || !session) return;
-    const seat: Seat | null =
-      uid === session.seatA.uid ? "a" : uid === session.seatB.uid ? "b" : null;
-    if (seat) recordMySession(sessionId, seat);
-  }, [uid, session, sessionId]);
+    if (seatEarly) recordMySession(sessionId, seatEarly);
+  }, [seatEarly, sessionId]);
+
+  // Keep our presence fresh so the partner can see we're here.
+  usePresence(sessionId, seatEarly);
 
   if (!firebaseConfigured) return <NotConfigured />;
   if (authError) return <ErrorScreen message={authError} />;
@@ -67,7 +77,9 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
   const pack = getPack(session.settings.pack);
 
   if (mine.finished && partner.finished) {
-    return <Finale sessionId={sessionId} session={session} mySeat={mySeat} pack={pack} />;
+    return (
+      <Finale sessionId={sessionId} session={session} mySeat={mySeat} pack={pack} uid={uid} />
+    );
   }
 
   if (mine.finished) {
