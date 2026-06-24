@@ -63,10 +63,13 @@ function SessionRow({ row, onRemove }: { row: Row; onRemove: () => void }) {
   const status = describe(session, seat);
 
   return (
-    <li className="card flex items-center justify-between gap-3 p-4">
+    <li className="card flex items-center justify-between gap-3 p-4 transition hover:border-ember/40 hover:bg-blush/20">
       <Link href={`/s/${id}`} className="min-w-0 flex-1">
         <p className="truncate font-medium">{status.title}</p>
         <p className="mt-0.5 text-sm text-dusk">{status.detail}</p>
+        {status.cta && (
+          <p className="mt-1 text-sm font-medium text-ember">{status.cta} →</p>
+        )}
       </Link>
       <div className="flex shrink-0 items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.chipClass}`}>
@@ -90,6 +93,7 @@ function describe(session: Session | null, seat: Seat) {
     return {
       title: "Session unavailable",
       detail: "Couldn't load this one — it may have been removed.",
+      cta: "",
       chip: "—",
       chipClass: "bg-ink/5 text-dusk",
     };
@@ -107,6 +111,7 @@ function describe(session: Session | null, seat: Seat) {
     return {
       title: "Waiting for your partner to join",
       detail: "Open to resend the invite link.",
+      cta: "Resend invite",
       chip: "Invite",
       chipClass: "bg-blush/60 text-emberdark",
     };
@@ -114,7 +119,8 @@ function describe(session: Session | null, seat: Seat) {
   if (mine.finished && partner.finished) {
     return {
       title: `You & ${partnerName}`,
-      detail: `All ${total} answered — open your keepsake.`,
+      detail: `All ${total} answered.`,
+      cta: "Read all answers & keepsake",
       chip: "Done",
       chipClass: "bg-emerald-100 text-emerald-700",
     };
@@ -123,6 +129,7 @@ function describe(session: Session | null, seat: Seat) {
     return {
       title: `Waiting on ${partnerName}`,
       detail: progress,
+      cta: "Reread your answers so far",
       chip: "Their turn",
       chipClass: "bg-ink/5 text-dusk",
     };
@@ -131,6 +138,7 @@ function describe(session: Session | null, seat: Seat) {
   return {
     title: `You & ${partnerName}`,
     detail: progress,
+    cta: yourTurn ? "Continue answering" : "Open & read so far",
     chip: yourTurn ? "Your turn" : "Their turn",
     chipClass: yourTurn ? "bg-ember/15 text-ember" : "bg-ink/5 text-dusk",
   };
