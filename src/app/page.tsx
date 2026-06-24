@@ -19,13 +19,18 @@ export default function Landing() {
   return (
     <main className="flex flex-1 flex-col">
       <header className="mb-2">
-        <p className="pill">Closer · Deeper</p>
+        <p className="pill">奥底 · Okusoko</p>
       </header>
 
       <section className="mt-6 animate-fade-up">
         <h1 className="font-serif text-4xl leading-tight sm:text-5xl">
           The 36 questions that make strangers fall in love — answered together.
         </h1>
+        <p className="mt-4 text-base text-dusk">
+          <span className="font-serif text-ink">奥底 (okusoko)</span> — the innermost
+          depths; the very bottom of the heart. The part of someone almost no one reaches.
+          That's where these questions take you.
+        </p>
         <p className="mt-5 text-lg text-dusk">
           In 1997, the psychologist Arthur Aron showed that escalating, reciprocal
           self-disclosure can create remarkable closeness between two people — in about
@@ -59,7 +64,7 @@ export default function Landing() {
 
       <footer className="mt-auto pt-12 text-xs text-dusk/70">
         Based on Aron et al., “The Experimental Generation of Interpersonal Closeness”
-        (1997). Closer hosts the questions; the closeness is yours.
+        (1997). Okusoko hosts the questions; the depths are yours.
       </footer>
     </main>
   );

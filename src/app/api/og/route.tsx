@@ -26,7 +26,7 @@ export async function GET(req: Request) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", color: "#c2453d", fontSize: 30 }}>
-          Closer · Deeper
+          奥底 · Okusoko
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 68, color: "#1a1625", lineHeight: 1.1 }}>{title}</div>

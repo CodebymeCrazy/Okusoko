@@ -1,8 +1,8 @@
 {
-  "name": "closer-deeper",
+  "name": "okusoko",
   "version": "1.0.0",
   "private": true,
-  "description": "Closer — Deeper: Aron's 36 questions, answered async with rules-enforced reciprocal reveal.",
+  "description": "Okusoko (奥底) — Aron's 36 questions, answered async with rules-enforced reciprocal reveal.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

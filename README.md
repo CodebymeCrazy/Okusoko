@@ -1,4 +1,8 @@
-# Closer — Deeper (36 Questions)
+# Okusoko 奥底 (36 Questions)
+
+> **Okusoko (奥底)** — "the innermost depths; the very bottom of the heart."
+> *Kokoro no okusoko* is the deepest recess of a person, the part almost no one
+> reaches. Which is exactly where the 36 questions take you.
 
 Two people answer Arthur Aron's 36 questions for a partner, at their own pace, on
 their own devices, with no login. The point isn't the questions — it's

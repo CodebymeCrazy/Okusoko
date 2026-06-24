@@ -18,11 +18,11 @@ export function whatsappLink(text: string): string {
 }
 
 export function inviteText(creatorName: string, sessionId: string): string {
-  return `I started the 36 questions on Closer 👀 answer them with me → ${sessionUrl(sessionId)}`;
+  return `I started the 36 questions on Okusoko 👀 answer them with me → ${sessionUrl(sessionId)}`;
 }
 
 export function nudgeText(myName: string, count: number, sessionId: string): string {
-  return `I just answered ${count} on Closer — your turn 👀 → ${sessionUrl(sessionId)}`;
+  return `I just answered ${count} on Okusoko — your turn 👀 → ${sessionUrl(sessionId)}`;
 }
 
 export function spreadText(): string {

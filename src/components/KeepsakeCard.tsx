@@ -39,7 +39,7 @@ export function KeepsakeCard({
         ref={ref}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blush to-paper p-8 text-center"
       >
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-ember">Closer</p>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-ember">奥底 Okusoko</p>
         <p className="mt-8 font-serif text-3xl leading-snug text-ink">
           {nameA} &amp; {nameB}
         </p>

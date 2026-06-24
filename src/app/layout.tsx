@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const title = "Closer — the 36 questions, answered together";
+const title = "Okusoko — the 36 questions, all the way down";
 const description =
-  "Arthur Aron's 36 questions for two. Answer at your own pace — you can't see their answer until you've written yours.";
+  "Okusoko (奥底): the innermost depths of the heart. Arthur Aron's 36 questions for two — answer at your own pace, and you can't see their answer until you've written yours.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title,
   description,
   openGraph: {
     title,
     description,
     type: "website",
-    images: [{ url: "/api/og", width: 1200, height: 630, alt: "Closer" }],
+    images: [{ url: "/api/og", width: 1200, height: 630, alt: "Okusoko" }],
   },
   twitter: {
     card: "summary_large_image",

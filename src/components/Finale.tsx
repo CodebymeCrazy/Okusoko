@@ -65,10 +65,10 @@ export function Finale({
       <section className="mt-8">
         <h2 className="font-serif text-xl">Pass it on</h2>
         <p className="mt-2 text-dusk">
-          Know two people who should do this? Send them Closer.
+          Know two people who should do this? Send them Okusoko.
         </p>
         <div className="mt-3">
-          <WhatsAppButton text={spreadText()}>Share Closer</WhatsAppButton>
+          <WhatsAppButton text={spreadText()}>Share Okusoko</WhatsAppButton>
         </div>
       </section>
 

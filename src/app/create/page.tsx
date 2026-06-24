@@ -46,7 +46,7 @@ export default function CreatePage() {
   return (
     <main className="flex flex-1 flex-col">
       <Link href="/" className="text-sm text-dusk hover:text-ink">
-        ← Closer
+        ← Okusoko
       </Link>
 
       <h1 className="mt-6 font-serif text-3xl">Start a session</h1>
