@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { firebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
 import { useSession } from "@/lib/session";
+import { recordMySession } from "@/lib/mySessions";
 import type { Seat } from "@/lib/types";
 import { Spinner } from "@/components/ui";
 import { InviteScreen } from "@/components/InviteScreen";
@@ -22,6 +24,14 @@ export function SessionClient({ sessionId }: { sessionId: string }) {
   const { session, exists, error: sessionError } = useSession(
     firebaseConfigured ? sessionId : null
   );
+
+  // Remember any session this device holds a seat in, for the "Your sessions" list.
+  useEffect(() => {
+    if (!uid || !session) return;
+    const seat: Seat | null =
+      uid === session.seatA.uid ? "a" : uid === session.seatB.uid ? "b" : null;
+    if (seat) recordMySession(sessionId, seat);
+  }, [uid, session, sessionId]);
 
   if (!firebaseConfigured) return <NotConfigured />;
   if (authError) return <ErrorScreen message={authError} />;

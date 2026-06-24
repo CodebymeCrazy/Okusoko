@@ -118,6 +118,22 @@ export async function submitAnswer(
   }
 }
 
+/** Star (or change) which of the partner's answers you want on the keepsake. */
+export async function setFavorite(
+  sessionId: string,
+  seat: Seat,
+  qn: number | null
+): Promise<void> {
+  const seatKey = seat === "a" ? "seatA" : "seatB";
+  await updateDoc(sessionRef(sessionId), { [`${seatKey}.favoriteQ`]: qn });
+}
+
+/** One-shot read of a session doc (used by the "Your sessions" list). */
+export async function fetchSession(sessionId: string): Promise<Session | null> {
+  const snap = await getDoc(sessionRef(sessionId));
+  return snap.exists() ? (snap.data() as Session) : null;
+}
+
 /** Read a single response doc (used on demand for reveals / recap). */
 export async function fetchResponse(
   sessionId: string,

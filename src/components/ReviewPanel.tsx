@@ -18,6 +18,9 @@ export function ReviewPanel({
   upTo,
   title,
   onClose,
+  favoritable = false,
+  favoriteQ = null,
+  onFavorite,
 }: {
   sessionId: string;
   mySeat: Seat;
@@ -28,6 +31,10 @@ export function ReviewPanel({
   upTo: number;
   title: string;
   onClose: () => void;
+  /** When true, each partner answer shows a star to feature it on the keepsake. */
+  favoritable?: boolean;
+  favoriteQ?: number | null;
+  onFavorite?: (qn: number) => void;
 }) {
   const numbers = Array.from({ length: Math.max(0, upTo) }, (_, i) => i + 1);
   return (
@@ -53,6 +60,9 @@ export function ReviewPanel({
                   partnerSeat={partnerSeat}
                   myName={myName}
                   partnerName={partnerName}
+                  favoritable={favoritable}
+                  isFavorite={favoriteQ === n}
+                  onFavorite={onFavorite}
                 />
               ))}
             </ol>
@@ -70,6 +80,9 @@ function ReviewRow({
   partnerSeat,
   myName,
   partnerName,
+  favoritable,
+  isFavorite,
+  onFavorite,
 }: {
   sessionId: string;
   n: number;
@@ -77,6 +90,9 @@ function ReviewRow({
   partnerSeat: Seat;
   myName: string;
   partnerName: string;
+  favoritable: boolean;
+  isFavorite: boolean;
+  onFavorite?: (qn: number) => void;
 }) {
   const [mine, setMine] = useState<ResponseDoc | null>(null);
   const [theirs, setTheirs] = useState<ResponseDoc | null>(null);
@@ -103,16 +119,52 @@ function ReviewRow({
       <p className="mt-1 font-serif text-lg leading-snug">{question?.text}</p>
       <div className="mt-3 space-y-2">
         <Bubble who={myName} text={mine?.text} mine />
-        <Bubble who={partnerName} text={theirs?.text} />
+        <Bubble
+          who={partnerName}
+          text={theirs?.text}
+          star={
+            favoritable && theirs?.text
+              ? { active: isFavorite, onClick: () => onFavorite?.(n) }
+              : undefined
+          }
+        />
       </div>
     </li>
   );
 }
 
-function Bubble({ who, text, mine = false }: { who: string; text?: string; mine?: boolean }) {
+function Bubble({
+  who,
+  text,
+  mine = false,
+  star,
+}: {
+  who: string;
+  text?: string;
+  mine?: boolean;
+  star?: { active: boolean; onClick: () => void };
+}) {
   return (
-    <div className={`rounded-2xl p-3 ${mine ? "bg-ink/5" : "bg-blush/40"}`}>
-      <p className="text-xs font-medium uppercase tracking-wide text-dusk">{who}</p>
+    <div
+      className={`rounded-2xl p-3 ${mine ? "bg-ink/5" : "bg-blush/40"} ${
+        star?.active ? "ring-2 ring-ember" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-dusk">{who}</p>
+        {star && (
+          <button
+            onClick={star.onClick}
+            aria-pressed={star.active}
+            aria-label={star.active ? "Remove favorite" : "Feature this on the keepsake"}
+            className={`text-lg leading-none transition ${
+              star.active ? "text-ember" : "text-dusk/40 hover:text-ember"
+            }`}
+          >
+            {star.active ? "★" : "☆"}
+          </button>
+        )}
+      </div>
       <p className="mt-1 whitespace-pre-wrap text-ink">{text ?? "—"}</p>
     </div>
   );

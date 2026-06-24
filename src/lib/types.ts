@@ -17,6 +17,8 @@ export interface SeatState {
   /** Highest question number (1-36) this seat has answered. 0 = none yet. */
   lastAnswered: number;
   finished: boolean;
+  /** The question number whose partner answer this seat starred for the keepsake. */
+  favoriteQ?: number | null;
 }
 
 export interface Session {

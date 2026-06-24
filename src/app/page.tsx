@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { YourSessions } from "@/components/YourSessions";
 
 const STEPS = [
   {
@@ -18,9 +19,11 @@ const STEPS = [
 export default function Landing() {
   return (
     <main className="flex flex-1 flex-col">
-      <header className="mb-2">
+      <header className="mb-6">
         <p className="pill">奥底 · Okusoko</p>
       </header>
+
+      <YourSessions />
 
       <section className="mt-6 animate-fade-up">
         <h1 className="font-serif text-4xl leading-tight sm:text-5xl">

@@ -1,6 +1,6 @@
 "use client";
 
-import { inviteText, sessionUrl } from "@/lib/share";
+import { inviteText, inviteUrl } from "@/lib/share";
 import { CopyLinkButton, WhatsAppButton } from "./ui";
 
 export function InviteScreen({
@@ -10,7 +10,7 @@ export function InviteScreen({
   sessionId: string;
   creatorName: string;
 }) {
-  const url = sessionUrl(sessionId);
+  const url = inviteUrl(creatorName, sessionId);
   return (
     <main className="flex flex-1 flex-col">
       <p className="pill self-start">Waiting for your partner</p>

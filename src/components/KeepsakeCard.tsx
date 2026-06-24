@@ -10,13 +10,22 @@ export function KeepsakeCard({
   nameA,
   nameB,
   dateLabel,
+  favorite,
 }: {
   nameA: string;
   nameB: string;
   dateLabel: string;
+  /** An answer to feature on the card (the partner answer the viewer starred). */
+  favorite?: { author: string; question: number; text: string };
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
+
+  // Keep the card composed: trim very long favorites to a clean pull-quote.
+  const quote =
+    favorite && favorite.text.length > 180
+      ? `${favorite.text.slice(0, 177).trimEnd()}…`
+      : favorite?.text;
 
   async function download() {
     if (!ref.current) return;
@@ -44,6 +53,18 @@ export function KeepsakeCard({
           {nameA} &amp; {nameB}
         </p>
         <p className="mt-3 font-serif text-lg text-dusk">answered all 36 questions.</p>
+
+        {quote && (
+          <figure className="mx-auto mt-7 max-w-md rounded-2xl bg-white/60 px-5 py-4">
+            <blockquote className="font-serif text-base italic leading-snug text-ink">
+              “{quote}”
+            </blockquote>
+            <figcaption className="mt-2 text-xs uppercase tracking-[0.15em] text-dusk/80">
+              {favorite?.author} · on Q{favorite?.question}
+            </figcaption>
+          </figure>
+        )}
+
         <div className="mx-auto mt-6 h-px w-16 bg-ember/40" />
         <p className="mt-6 text-sm text-dusk">{dateLabel}</p>
         <p className="mt-1 text-xs uppercase tracking-[0.2em] text-dusk/70">

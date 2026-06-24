@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { spreadText } from "@/lib/share";
-import type { Seat, Session } from "@/lib/types";
+import { fetchResponse, setFavorite } from "@/lib/session";
+import { TOTAL_QUESTIONS } from "@/lib/questions";
+import type { ResponseDoc, Seat, Session } from "@/lib/types";
 import { KeepsakeCard } from "./KeepsakeCard";
 import { ReviewPanel } from "./ReviewPanel";
 import { WhatsAppButton } from "./ui";
-import { TOTAL_QUESTIONS } from "@/lib/questions";
 
 /**
  * Shown to both people once both have finished. The keepsake is the real
@@ -29,8 +30,31 @@ export function Finale({
     (partnerSeat === "a" ? session.seatA.name : session.seatB.name) ?? "Your partner";
   const sealed = session.settings.reveal === "sealed";
 
-  const [showAll, setShowAll] = useState(sealed); // sealed: open the reveal straight away
+  const [showAll, setShowAll] = useState(false);
+  const [favoritePicker, setFavoritePicker] = useState(false);
   const dateLabel = formatDate(session.createdAt?.toDate?.() ?? new Date());
+
+  // The answer I starred (my partner's) — featured on the keepsake.
+  const mine = mySeat === "a" ? session.seatA : session.seatB;
+  const favoriteQ = mine.favoriteQ ?? null;
+  const [favoriteText, setFavoriteText] = useState<string | null>(null);
+  useEffect(() => {
+    if (!favoriteQ) {
+      setFavoriteText(null);
+      return;
+    }
+    let active = true;
+    fetchResponse(sessionId, favoriteQ, partnerSeat).then((r: ResponseDoc | null) => {
+      if (active) setFavoriteText(r?.text ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [sessionId, favoriteQ, partnerSeat]);
+
+  async function chooseFavorite(qn: number) {
+    await setFavorite(sessionId, mySeat, favoriteQ === qn ? null : qn);
+  }
 
   return (
     <main className="flex flex-1 flex-col">
@@ -46,8 +70,25 @@ export function Finale({
           nameA={session.seatA.name ?? "—"}
           nameB={session.seatB.name ?? "—"}
           dateLabel={dateLabel}
+          favorite={
+            favoriteQ && favoriteText
+              ? { author: partnerName, question: favoriteQ, text: favoriteText }
+              : undefined
+          }
         />
       </div>
+
+      <section className="card mt-8 p-5">
+        <h2 className="font-serif text-xl">Feature an answer on your keepsake</h2>
+        <p className="mt-2 text-dusk">
+          {favoriteQ
+            ? `You starred ${partnerName}'s answer to Question ${favoriteQ}.`
+            : `Pick the one of ${partnerName}'s answers that stayed with you — it'll be highlighted on your card.`}
+        </p>
+        <button className="btn-secondary mt-3" onClick={() => setFavoritePicker(true)}>
+          {favoriteQ ? "Change your pick" : "Choose a favorite"}
+        </button>
+      </section>
 
       <button className="btn-primary mt-8 self-start" onClick={() => setShowAll(true)}>
         {sealed ? "Read everything, side by side" : "Reread all 36 together"}
@@ -82,6 +123,22 @@ export function Finale({
           upTo={TOTAL_QUESTIONS}
           title="All 36, together"
           onClose={() => setShowAll(false)}
+        />
+      )}
+
+      {favoritePicker && (
+        <ReviewPanel
+          sessionId={sessionId}
+          mySeat={mySeat}
+          partnerSeat={partnerSeat}
+          myName={myName}
+          partnerName={partnerName}
+          upTo={TOTAL_QUESTIONS}
+          title={`Star one of ${partnerName}'s answers`}
+          onClose={() => setFavoritePicker(false)}
+          favoritable
+          favoriteQ={favoriteQ}
+          onFavorite={chooseFavorite}
         />
       )}
     </main>
