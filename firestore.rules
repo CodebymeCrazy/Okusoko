@@ -1,0 +1,118 @@
+rules_version = '2';
+
+// Closer — Deeper (36 questions), async-first.
+//
+// The one non-negotiable: you cannot read your partner's answer to a question
+// until your own answer to that same question exists (volley), or until both
+// people have finished (sealed). This is enforced HERE, not just in the UI.
+//
+// Answers are split into separate per-seat docs (responses/a, responses/b) on
+// purpose: a Firestore read returns a whole document, so if both answers lived
+// in one doc the rules could not hide one half. Two docs => real gating.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function sessionDoc(sessionId) {
+      return get(/databases/$(database)/documents/sessions/$(sessionId)).data;
+    }
+
+    match /sessions/{sessionId} {
+
+      // Read the session doc (names + progress metadata only — never answer text)
+      // if you're a seat holder, OR if seat B is still open so a prospective
+      // partner can see who invited them. Once both seats are full, a third
+      // party (the link grabbed in a group chat) can no longer read it.
+      allow read: if isSignedIn() && (
+        resource.data.seatA.uid == request.auth.uid ||
+        resource.data.seatB.uid == request.auth.uid ||
+        resource.data.seatB.uid == null
+      );
+
+      // Create a session: the creator must seat themselves at A, with B open.
+      allow create: if isSignedIn()
+        && request.resource.data.seatA.uid == request.auth.uid
+        && request.resource.data.seatB.uid == null
+        && request.resource.data.settings.timing == 'apart'
+        && request.resource.data.settings.reveal in ['volley', 'sealed'];
+
+      // Updates fall into two shapes:
+      //   1. Claiming the open seat B (transactionally on the client).
+      //   2. A seat holder advancing their own progress / finished flag.
+      // In every case seat A's and the other seat's uid are immutable.
+      allow update: if isSignedIn() && (
+        // 1. Claim seat B — only when it's open and you claim it for yourself.
+        (
+          resource.data.seatB.uid == null
+          && request.resource.data.seatB.uid == request.auth.uid
+          && request.resource.data.seatA.uid == resource.data.seatA.uid
+        )
+        ||
+        // 2. Seat A updating its own progress; both uids unchanged.
+        (
+          resource.data.seatA.uid == request.auth.uid
+          && request.resource.data.seatA.uid == resource.data.seatA.uid
+          && request.resource.data.seatB.uid == resource.data.seatB.uid
+        )
+        ||
+        // 2. Seat B updating its own progress; both uids unchanged.
+        (
+          resource.data.seatB.uid == request.auth.uid
+          && request.resource.data.seatB.uid == resource.data.seatB.uid
+          && request.resource.data.seatA.uid == resource.data.seatA.uid
+        )
+      );
+
+      allow delete: if false;
+
+      match /questions/{qid}/responses/{seat} {
+
+        function session() {
+          return sessionDoc(sessionId);
+        }
+
+        // Which seat does the caller hold? 'a', 'b', or 'none'.
+        function mySeat() {
+          return session().seatA.uid == request.auth.uid ? 'a'
+            : (session().seatB.uid == request.auth.uid ? 'b' : 'none');
+        }
+
+        function bothFinished() {
+          return session().seatA.finished == true && session().seatB.finished == true;
+        }
+
+        function myAnswerExists() {
+          return exists(
+            /databases/$(database)/documents/sessions/$(sessionId)/questions/$(qid)/responses/$(mySeat())
+          );
+        }
+
+        // Create your OWN answer only, once. No overwrite (locks it after reveal).
+        allow create: if isSignedIn()
+          && seat == mySeat()
+          && request.resource.data.uid == request.auth.uid
+          && !exists(
+            /databases/$(database)/documents/sessions/$(sessionId)/questions/$(qid)/responses/$(seat)
+          );
+
+        // Answers are immutable once written.
+        allow update, delete: if false;
+
+        // Read your own answer freely. Read your partner's answer only when the
+        // reveal condition for the chosen mode is met.
+        allow read: if isSignedIn() && mySeat() != 'none' && (
+          seat == mySeat()
+          || (
+            session().settings.reveal == 'volley'
+              ? myAnswerExists()
+              : bothFinished()
+          )
+        );
+      }
+    }
+  }
+}
