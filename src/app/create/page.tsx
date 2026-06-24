@@ -3,14 +3,11 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "@/lib/useAuth";
-import { createSession } from "@/lib/session";
 import { DEFAULT_PACK_ID, PACK_LIST, getPack, packTotal } from "@/lib/packs";
 import type { RevealMode } from "@/lib/types";
 
 export default function CreatePage() {
   const router = useRouter();
-  const { uid, loading, error } = useAuth();
   const [name, setName] = useState("");
   const [pack, setPack] = useState<string>(DEFAULT_PACK_ID);
   const [reveal, setReveal] = useState<RevealMode>("volley");
@@ -33,11 +30,13 @@ export default function CreatePage() {
   ];
 
   async function handleCreate() {
-    if (!uid || !name.trim()) return;
+    if (!name.trim() || submitting) return;
     setSubmitting(true);
     setErr(null);
     try {
-      const id = await createSession(uid, name, reveal, pack);
+      // Firebase loads here, on demand — not on page load.
+      const { createSessionFlow } = await import("@/lib/createFlow");
+      const id = await createSessionFlow(name, reveal, pack);
       router.push(`/s/${id}`);
     } catch (e) {
       setErr(String((e as Error)?.message ?? e));
@@ -125,14 +124,12 @@ export default function CreatePage() {
         </div>
       </fieldset>
 
-      {(err || error) && (
-        <p className="mt-4 text-sm text-ember">{err ?? error}</p>
-      )}
+      {err && <p className="mt-4 text-sm text-ember">{err}</p>}
 
       <div className="mt-8">
         <button
           className="btn-primary w-full sm:w-auto"
-          disabled={loading || submitting || !name.trim() || !uid}
+          disabled={submitting || !name.trim()}
           onClick={handleCreate}
         >
           {submitting ? "Creating…" : "Create session"}
