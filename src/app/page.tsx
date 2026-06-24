@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { YourSessions } from "@/components/YourSessions";
+import { YourSessionsLazy } from "@/components/YourSessionsLazy";
 import { InstallHint } from "@/components/InstallHint";
 
 const STEPS = [
@@ -24,7 +24,7 @@ export default function Landing() {
         <p className="pill">奥底 · Okusoko</p>
       </header>
 
-      <YourSessions />
+      <YourSessionsLazy />
       <InstallHint />
 
       <section className="mt-6 animate-fade-up">
