@@ -39,7 +39,7 @@ export function KeepsakeCard({
       const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(ref.current, { scale: 2, backgroundColor: null });
       const link = document.createElement("a");
-      link.download = `closer-${nameA}-and-${nameB}.png`.replace(/\s+/g, "-").toLowerCase();
+      link.download = `okusoko-${nameA}-and-${nameB}.png`.replace(/\s+/g, "-").toLowerCase();
       link.href = canvas.toDataURL("image/png");
       link.click();
     } finally {

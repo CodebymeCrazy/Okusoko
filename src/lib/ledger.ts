@@ -7,7 +7,7 @@
 import type { Seat } from "./types";
 
 function key(sessionId: string, seat: Seat | "x", suffix: string): string {
-  return `closer:${sessionId}:${seat}:${suffix}`;
+  return `okusoko:${sessionId}:${seat}:${suffix}`;
 }
 
 export function getViewedUpTo(sessionId: string, seat: Seat): number {

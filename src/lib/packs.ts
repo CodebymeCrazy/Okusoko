@@ -66,7 +66,7 @@ const FRIENDS = buildPack(
       ],
     },
     {
-      title: "Set II — Closer in",
+      title: "Set II — Further in",
       blurb: "The things you don't usually lead with. Go where it's a bit honest.",
       questions: [
         "What's something you're quietly working through right now?",
